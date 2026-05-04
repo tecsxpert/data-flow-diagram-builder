@@ -1,13 +1,17 @@
-from flask import Flask
-from routes.ai_routes import ai_bp
+def validate_input(text):
+    blocked = [
+        "or 1=1",
+        "drop table",
+        "--",
+        ";",
+        "ignore previous instructions",
+        "reveal system prompt"
+    ]
 
-app = Flask(__name__)
+    text = text.lower()
 
-app.register_blueprint(ai_bp)
+    for item in blocked:
+        if item in text:
+            return False
 
-@app.route("/health")
-def health():
-    return {"status": "AI service running"}
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    return True
