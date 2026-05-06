@@ -7,7 +7,7 @@ services:
     environment:
       POSTGRES_DB: dfd_builder
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: Ganesh@24
+      POSTGRES_PASSWORD: 1234
     ports:
       - "5432:5432"
     healthcheck:
@@ -39,16 +39,16 @@ services:
       dockerfile: Dockerfile
     container_name: dfd-backend
     ports:
-      - "8080:8080"
+      - "8082:8082"
     environment:
       - DB_URL=jdbc:postgresql://db:5432/dfd_builder
       - DB_USERNAME=postgres
-      - DB_PASSWORD=Ganesh@24
+      - DB_PASSWORD=1234
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - MAIL_HOST=smtp.gmail.com
-      - MAIL_USERNAME=ganeshkolare5@gmail.com
-      - MAIL_PASSWORD=dlvp ohcj jtvh wzfc
+      - MAIL_USERNAME=patelanwar647@gmail.com
+      - MAIL_PASSWORD=[PASSWORD]
       - JWT_SECRET=404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
     depends_on:
       db:
@@ -58,24 +58,9 @@ services:
     networks:
       - dfd-network
 
-  ai-service:
-    build:
-      context: ./ai-service
-      dockerfile: Dockerfile
-    container_name: dfd-ai-service
-    ports:
-      - "5000:5000"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-    networks:
-      - dfd-network
-
-  frontend:
-    build:
-      context: ./Frontend
+   frontend:
+     build:
+       context: ./frontend
       dockerfile: Dockerfile
     container_name: dfd-frontend
     ports:

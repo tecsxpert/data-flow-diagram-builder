@@ -28,7 +28,6 @@ function AIPanel({ description }) {
       const res = await API.post(`/ai/${endpoint}`, { text: description });
       setResult({ action: label, data: res.data });
     } catch (err) {
-      console.error(err);
       setError(
         err?.response?.data?.message ||
           "AI service is unavailable. Please try again later."

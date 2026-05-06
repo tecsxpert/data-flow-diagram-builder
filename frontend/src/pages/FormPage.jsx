@@ -24,7 +24,6 @@ function FormPage({ editId = null, onSaved }) {
           setForm({ title: title || "", description: description || "", status: status || "" });
         })
         .catch((err) => {
-          console.error(err);
           setError("Failed to load record for editing");
         });
     }
@@ -59,7 +58,6 @@ function FormPage({ editId = null, onSaved }) {
       // Notify parent so it can refresh list
       if (onSaved) onSaved();
     } catch (err) {
-      console.error(err);
       setError(isEditMode ? "Failed to update record" : "Failed to create record");
     } finally {
       setLoading(false);
@@ -92,7 +90,7 @@ function FormPage({ editId = null, onSaved }) {
             type="text"
             placeholder="Enter title"
             value={form.title}
-            className="border border-gray-300 rounded w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="border border-gray-300 rounded w-full p-2 h-11 focus:outline-none focus:ring-2 focus:ring-blue-400"
             onChange={handleChange}
           />
         </div>
@@ -116,7 +114,7 @@ function FormPage({ editId = null, onSaved }) {
             id="form-status"
             name="status"
             value={form.status}
-            className="border border-gray-300 rounded w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="border border-gray-300 rounded w-full p-2 h-11 focus:outline-none focus:ring-2 focus:ring-blue-400"
             onChange={handleChange}
           >
             <option value="">— Select Status —</option>

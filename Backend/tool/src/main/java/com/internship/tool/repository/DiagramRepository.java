@@ -11,11 +11,11 @@ import java.time.LocalDateTime;
 
 @Repository
 public interface DiagramRepository extends JpaRepository<Diagram, Long> {
-    
+
     List<Diagram> findByNameContainingIgnoreCase(String name);
-    
+
     List<Diagram> findByRole(String role);
-    
+
     @Query("SELECT d FROM Diagram d WHERE d.description IS NOT NULL AND d.description != ''")
     List<Diagram> findDiagramsWithDescription();
 

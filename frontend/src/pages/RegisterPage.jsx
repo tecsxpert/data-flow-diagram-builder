@@ -53,7 +53,6 @@ function RegisterPage({ onGoToLogin }) {
         onGoToLogin();
       }, 2000);
     } catch (err) {
-      console.error(err);
       const msg = err.response?.data?.message || "Registration failed. Email may already be in use.";
       setError(msg);
     } finally {

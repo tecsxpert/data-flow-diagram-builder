@@ -18,7 +18,6 @@ function DetailPage({ id, onBack, onEdit }) {
       const res = await API.get(`/${id}`);
       setData(res.data);
     } catch (err) {
-      console.error(err);
       setError("Failed to load record details.");
     } finally {
       setLoading(false);

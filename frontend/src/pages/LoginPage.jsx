@@ -46,7 +46,6 @@ function LoginPage({ setToken, onGoToRegister }) {
       localStorage.setItem("token", token);
       setToken(token);
     } catch (err) {
-      console.error(err);
       setError("Invalid email or password");
     } finally {
       setLoading(false);

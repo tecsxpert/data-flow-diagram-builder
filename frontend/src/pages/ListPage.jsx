@@ -44,10 +44,9 @@ function ListPage({ onView, onEdit }) {
     setLoading(true);
     setError("");
     try {
-      const res = await API.get("/all");
-      setAllData(res.data);
+      const res = await API.get("/all?page=0&size=1000");
+      setAllData(res.data.content);
     } catch (err) {
-      console.error(err);
       setError("Failed to load data. Make sure you are logged in.");
     } finally {
       setLoading(false);
@@ -76,7 +75,6 @@ function ListPage({ onView, onEdit }) {
         setAllData(res.data);
       } catch (err) {
         // Backend search not available — client-side filter handles it
-        console.warn("Search API failed, falling back to client-side filter", err);
       }
     }, 500);
   };
@@ -100,7 +98,6 @@ function ListPage({ onView, onEdit }) {
       setSearchTerm("");
     } catch (err) {
       // Backend doesn't support ?status= → client-side filter handles it silently
-      console.warn("Status filter API not available, using client-side filter.");
     }
   };
 
@@ -126,7 +123,6 @@ function ListPage({ onView, onEdit }) {
       setStatusFilter("");
     } catch (err) {
       // Backend /filter not ready → client-side filter will handle it
-      console.warn("Date filter API not available, using client-side filter.");
     }
   };
 
@@ -153,7 +149,6 @@ function ListPage({ onView, onEdit }) {
       setToDate("");
       setDateApplied(false);
     } catch (err) {
-      console.error("Failed to delete", err);
     }
   };
 
@@ -251,7 +246,7 @@ function ListPage({ onView, onEdit }) {
               type="text"
               placeholder="Search by title or description..."
               value={searchTerm}
-              className="border border-gray-300 rounded w-full p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="border border-gray-300 rounded w-full p-2 h-11 text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-blue-400"
               onChange={(e) => handleSearch(e.target.value)}
             />
           </div>
@@ -264,7 +259,7 @@ function ListPage({ onView, onEdit }) {
             <select
               id="status-filter"
               value={statusFilter}
-              className="border border-gray-300 rounded w-full p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white"
+              className="border border-gray-300 rounded w-full p-2 h-11 text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white"
               onChange={(e) => handleStatusFilter(e.target.value)}
             >
               <option value="">All Statuses</option>
@@ -287,7 +282,7 @@ function ListPage({ onView, onEdit }) {
               type="date"
               value={fromDate}
               max={toDate || undefined}
-              className="border border-gray-300 rounded p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="border border-gray-300 rounded p-2 h-11 text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-blue-400"
               onChange={(e) => {
                 setFromDate(e.target.value);
                 setDateApplied(false); // Reset until Apply clicked
@@ -305,7 +300,7 @@ function ListPage({ onView, onEdit }) {
               type="date"
               value={toDate}
               min={fromDate || undefined}
-              className="border border-gray-300 rounded p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="border border-gray-300 rounded p-2 h-11 text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-blue-400"
               onChange={(e) => {
                 setToDate(e.target.value);
                 setDateApplied(false); // Reset until Apply clicked
@@ -410,21 +405,21 @@ function ListPage({ onView, onEdit }) {
                         <button
                           id={`view-btn-${item.id}`}
                           onClick={() => onView && onView(item.id)}
-                          className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded text-xs font-medium transition"
+                          className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded text-sm md:text-base font-medium transition h-11"
                         >
                           👁 View
                         </button>
                         <button
                           id={`edit-btn-${item.id}`}
                           onClick={() => onEdit && onEdit(item.id)}
-                          className="bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1 rounded text-xs font-medium transition"
+                          className="bg-blue-100 hover:bg-blue-200 text-blue-700 px-4 py-2 rounded text-sm md:text-base font-medium transition h-11"
                         >
                           ✏️ Edit
                         </button>
                         <button
                           id={`delete-btn-${item.id}`}
                           onClick={() => handleDelete(item.id)}
-                          className="bg-red-100 hover:bg-red-200 text-red-700 px-3 py-1 rounded text-xs font-medium transition"
+                          className="bg-red-100 hover:bg-red-200 text-red-700 px-4 py-2 rounded text-sm md:text-base font-medium transition h-11"
                         >
                           🗑 Delete
                         </button>

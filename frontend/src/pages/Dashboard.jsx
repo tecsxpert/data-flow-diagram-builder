@@ -36,7 +36,6 @@ function Dashboard() {
       const res = await API.get("/stats");
       setStats(res.data);
     } catch (err) {
-      console.error(err);
       // Graceful fallback — backend /stats may not be ready yet
       setError("Stats API not available. Showing placeholder data.");
       setStats({ total: 0, active: 0, completed: 0, deleted: 0 });
@@ -77,7 +76,7 @@ function Dashboard() {
       )}
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         {KPI_CONFIG.map((kpi) => (
           <div
             key={kpi.key}

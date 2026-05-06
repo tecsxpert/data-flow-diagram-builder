@@ -39,6 +39,5 @@ public class DataSeeder implements CommandLineRunner {
         }
 
         diagramRepository.saveAll(diagrams);
-        System.out.println("Seeded " + toSeed + " diagrams into the database.");
     }
 }
