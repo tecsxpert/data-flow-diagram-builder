@@ -1,6 +1,6 @@
 import os
-from groq import Groq
 from dotenv import load_dotenv
+from groq import Groq
 
 load_dotenv()
 
@@ -9,13 +9,13 @@ client = Groq(
 )
 
 response = client.chat.completions.create(
-    model="llama-3.1-8b-instant",
     messages=[
         {
             "role": "user",
-            "content": "Say Hello from Groq API"
+            "content": "Explain artificial intelligence simply"
         }
-    ]
+    ],
+    model="llama-3.1-8b-instant"
 )
 
 print(response.choices[0].message.content)
