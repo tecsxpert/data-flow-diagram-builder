@@ -1,17 +1,12 @@
-def validate_input(text):
-    blocked = [
-        "or 1=1",
-        "drop table",
-        "--",
-        ";",
-        "ignore previous instructions",
-        "reveal system prompt"
-    ]
+from flask import Flask, request, jsonify
 
-    text = text.lower()
+app = Flask(__name__)
 
-    for item in blocked:
-        if item in text:
-            return False
+@app.route('/chat', methods=['POST'])
+def chat():
+    data = request.json
+    message = data.get("message", "")
+    return jsonify({"response": f"You said: {message}"})
 
-    return True
+if __name__ == '__main__':
+    app.run(debug=True)
