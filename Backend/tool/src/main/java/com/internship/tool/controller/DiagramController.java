@@ -1,6 +1,5 @@
 package com.internship.tool.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -18,8 +17,11 @@ import com.internship.tool.dto.DiagramDTO;
 @RequestMapping("/diagrams")
 public class DiagramController {
 
-    @Autowired
-    private DiagramService service;
+    private final DiagramService service;
+
+    public DiagramController(DiagramService service) {
+        this.service = service;
+    }
 
     @GetMapping
     public ResponseEntity<Page<Diagram>> getAll(@RequestParam(defaultValue = "0") int page,

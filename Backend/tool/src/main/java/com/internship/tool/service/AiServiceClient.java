@@ -1,27 +1,24 @@
 package com.internship.tool.service;
 
-import java.util.HashMap;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import java.util.Map;
 
-import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
-
+/**
+ * Bridges DfdRecordService → AiService (fully in-process, no HTTP call needed).
+ */
 @Service
 public class AiServiceClient {
 
+    @Autowired
+    private AiService aiService;
+
     public String getAiResponse(String input) {
         try {
-            RestTemplate restTemplate = new RestTemplate();
-
-            String url = "http://localhost:5000/describe";
-
-            Map<String, String> request = new HashMap<>();
-            request.put("input", input);
-
-            Object response = restTemplate.postForObject(url, request, Object.class);
-
-            return response.toString();
-
+            Map<String, Object> result = aiService.describe(input);
+            Object description = result.get("description");
+            return description != null ? description.toString() : null;
         } catch (Exception e) {
             return null;
         }

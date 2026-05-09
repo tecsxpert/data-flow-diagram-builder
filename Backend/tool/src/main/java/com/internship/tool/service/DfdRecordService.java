@@ -16,21 +16,26 @@ public class DfdRecordService {
     @Autowired
     private DfdRecordRepository repository;
 
+
     @Autowired
     private AiServiceClient aiService;
 
+    @org.springframework.cache.annotation.CacheEvict(value = "dfd_records", allEntries = true)
     public DfdRecord create(DfdRecord record) {
-        // If there's an AI call needed, we could do it here
-        // e.g. String aiDesc = aiService.getAiResponse(record.getDescription());
-        // if (aiDesc != null) record.setDescription(aiDesc);
-
+        String aiAnalysis = aiService.getAiResponse(record.getDescription());
+        if (aiAnalysis != null) {
+            record.setDescription(record.getDescription() + "\n\n[AI Analysis]: " + aiAnalysis);
+        }
+        
         return repository.save(record);
     }
 
+    @org.springframework.cache.annotation.Cacheable(value = "dfd_records")
     public List<DfdRecord> getAll() {
         return repository.findByDeletedFalse();
     }
 
+    @org.springframework.cache.annotation.CacheEvict(value = "dfd_records", allEntries = true)
     public DfdRecord update(Long id, DfdRecord updatedRecord) {
         DfdRecord existing = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Record not found"));
@@ -45,6 +50,7 @@ public class DfdRecordService {
         return repository.save(existing);
     }
 
+    @org.springframework.cache.annotation.CacheEvict(value = "dfd_records", allEntries = true)
     public void softDelete(Long id) {
         DfdRecord record = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Record not found"));

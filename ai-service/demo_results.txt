@@ -1,7 +1,0 @@
-All endpoints tested successfully:
-
-/describe → working (< 1 sec)
-/recommend → working (< 1 sec)
-/generate-report → working (< 1 sec)
-
-System is stable and demo-ready.

@@ -11,21 +11,8 @@
 	<groupId>com.internship</groupId>
 	<artifactId>tool</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name/>
-	<description/>
-	<url/>
-	<licenses>
-		<license/>
-	</licenses>
-	<developers>
-		<developer/>
-	</developers>
-	<scm>
-		<connection/>
-		<developerConnection/>
-		<tag/>
-		<url/>
-	</scm>
+	<name>tool</name>
+	<description>Data Flow Diagram Builder Tool</description>
 	<properties>
 		<java.version>17</java.version>
 	</properties>

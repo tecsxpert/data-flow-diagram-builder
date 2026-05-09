@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   db:
     image: postgres:15-alpine
@@ -7,9 +5,9 @@ services:
     environment:
       POSTGRES_DB: dfd_builder
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: Ganesh@24
+      POSTGRES_PASSWORD: your_db_password_here
     ports:
-      - "5432:5432"
+      - "5433:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d dfd_builder"]
       interval: 10s
@@ -43,13 +41,13 @@ services:
     environment:
       - DB_URL=jdbc:postgresql://db:5432/dfd_builder
       - DB_USERNAME=postgres
-      - DB_PASSWORD=Ganesh@24
+      - DB_PASSWORD=your_db_password_here
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - MAIL_HOST=smtp.gmail.com
-      - MAIL_USERNAME=ganeshkolare5@gmail.com
-      - MAIL_PASSWORD=dlvp ohcj jtvh wzfc
-      - JWT_SECRET=404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+      - MAIL_USERNAME=your_email@gmail.com
+      - MAIL_PASSWORD=your_app_password_here
+      - JWT_SECRET=your_base64_jwt_secret_key_at_least_32_chars_long
     depends_on:
       db:
         condition: service_healthy
@@ -58,20 +56,6 @@ services:
     networks:
       - dfd-network
 
-  ai-service:
-    build:
-      context: ./ai-service
-      dockerfile: Dockerfile
-    container_name: dfd-ai-service
-    ports:
-      - "5000:5000"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-    networks:
-      - dfd-network
 
   frontend:
     build:
