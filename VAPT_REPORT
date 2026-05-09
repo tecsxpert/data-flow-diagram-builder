@@ -1,0 +1,739 @@
+# VAPT ASSESSMENT REPORT
+## Tool-106: Data Flow Diagram Builder
+**Conducted By:** Siddesh Mali  
+**Repository:** https://github.com/tecsxpert/data-flow-diagram-builder.git  
+
+---
+
+## 📋 EXECUTIVE SUMMARY
+
+### Assessment Scope
+- **Backend:** Spring Boot 4.0.6 REST API (Java 17)
+- **Frontend:** React + Vite (JavaScript)
+- **AI Service:** Flask 3.1.2 (Python 3.11)
+- **Infrastructure:** Docker Compose with PostgreSQL, Redis
+- **Repository:** Public GitHub
+
+### Overall Security Rating: 🟠 HIGH RISK (7/10)
+
+**Status:**
+- 🔴 **CRITICAL Vulnerabilities:** 4
+- 🔴 **HIGH Vulnerabilities:** 4
+- 🟠 **MEDIUM Vulnerabilities:** 2
+- 🟡 **LOW Vulnerabilities:** 3
+- **Total Issues Found:** 13
+
+**Risk Level:** Application has significant security issues but also shows good practices (JWT, validation, auditing)
+
+---
+
+## 🔍 ASSESSMENT METHODOLOGY
+
+### Phase 1: Initial Reconnaissance 
+1. **Cloned repository** from GitHub
+2. **Identified all code files** - 40+ source files analyzed
+3. **Mapped architecture** - 3 main components (Backend, Frontend, AI)
+4. **Listed all configuration files** - docker-compose.yml, application.yml, requirements.txt, pom.xml
+
+### Phase 2: Configuration Audit 
+1. **Examined docker-compose.yml** - Found hardcoded secrets
+2. **Reviewed application.yml** - Found database credentials
+3. **Checked .gitignore** - Verified .env is protected
+4. **Analyzed environment variables** - Found exposed credentials
+
+### Phase 3: Code Analysis 
+1. **Security Configuration** - Reviewed SecurityConfig.java
+2. **JWT Implementation** - Analyzed JwtUtil.java and JwtAuthFilter.java
+3. **Input Validation** - Checked DTOs and Controllers for validation
+4. **Error Handling** - Reviewed GlobalExceptionHandler.java
+5. **Audit Logging** - Examined AuditAspect.java
+6. **Flask Routes** - Analyzed all AI service endpoints
+7. **Database Layer** - Reviewed repositories for SQL injection risks
+
+### Phase 4: Vulnerability Testing 
+1. **Secrets Scanning** - grep for hardcoded passwords/keys
+2. **SQL Injection** - Reviewed queries and parameterization
+3. **XSS Risks** - Analyzed input/output handling
+4. **CSRF** - Examined CSRF configuration
+5. **Authentication** - Tested authorization checks
+6. **API Security** - Reviewed endpoint protection
+
+### Phase 5: Dependency Analysis 
+1. **Java Dependencies** - Analyzed pom.xml
+2. **Python Packages** - Reviewed requirements.txt
+3. **JavaScript Packages** - Checked package.json
+4. **Version Checking** - Verified current versions
+
+---
+
+##  CRITICAL VULNERABILITIES
+
+### 1.  CRITICAL: Hardcoded Database Password in docker-compose.yml
+
+**Location:** `docker-compose.yml` Line 10
+```yaml
+POSTGRES_PASSWORD: Ganesh@24  #  PLAINTEXT PASSWORD
+```
+
+**Also appears in:** `Backend/tool/src/main/resources/application.yml` Line 9
+```yaml
+password: ${DB_PASSWORD:Ganesh@24}  # HARDCODED DEFAULT
+```
+
+**How I Found It:**
+```bash
+# Step 1: Examined docker-compose.yml line by line
+# Step 2: Searched for password/secret patterns:
+grep -r "password\|PASSWORD" docker-compose.yml
+
+# Step 3: Found plaintext password: Ganesh@24
+# Step 4: Confirmed in application.yml with default fallback
+```
+
+**Risk Assessment:**
+- Password is visible in public GitHub repository
+- Anyone can clone the repo and get the password
+- Direct database access possible
+- Database contains all application data
+- Can be used for lateral movement
+
+**Proof of Concept:**
+```bash
+# Attacker clones repo
+git clone https://github.com/tecsxpert/data-flow-diagram-builder.git
+
+# Extracts password from application.yml
+cat docker-compose.yml | grep PASSWORD
+
+# Result: POSTGRES_PASSWORD: Ganesh@24
+
+# Uses password to connect directly
+psql -h <server-ip> -U postgres -d dfd_builder
+# Password: Ganesh@24
+
+# Now attacker has full database access
+SELECT * FROM users;
+DROP TABLE diagrams;
+```
+
+**Impact:**
+- Database compromise
+- Data theft/modification
+- Service disruption
+- Complete loss of confidentiality
+
+**Remediation: For developer**
+```yaml
+# application.yml (FIXED)
+POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+
+# .env (add to .gitignore - already done)
+POSTGRES_PASSWORD=Ganesh@24
+
+# application.yml (FIXED)
+password: ${DB_PASSWORD}
+```
+
+**Verification:**
+- [ ] Remove hardcoded password from docker-compose.yml
+- [ ] Remove hardcoded default from application.yml
+- [ ] Ensure .env is in .gitignore (Already done)
+- [ ] Use environment variables only
+- [ ] Rotate all exposed credentials
+
+---
+
+### 2. CRITICAL: Exposed Gmail Credentials
+
+**Location:** `application.yml` Lines 50-51
+```yaml
+MAIL_USERNAME=ganeshkolare5@gmail.com
+MAIL_PASSWORD=dlvp ohcj jtvh wzfc
+```
+
+**Also in:** `application.yml` Lines 26-27
+```yaml
+username: ${MAIL_USERNAME:ganeshkolare5@gmail.com}
+password: ${MAIL_PASSWORD:dlvp ohcj jtvh wzfc}
+```
+
+**How I Found It:**
+```bash
+# Step 1: Searched for email pattern
+grep -r "gmail\|mail.*password" application.yml
+
+# Result: Found real Gmail account with app password
+MAIL_PASSWORD=dlvp ohcj jtvh wzfc
+```
+
+**Risk Assessment:**
+- Gmail account is publicly exposed
+- App password visible in plaintext
+- Can be used to send emails from this account
+- Can be used for account takeover attempts
+- Real person's email account compromised
+
+**Impact:**
+- Email account compromise
+- Impersonation attacks
+- Spam/phishing campaigns
+- Access to email recovery options
+
+**Remediation: For developer** Same as above - use environment variables
+
+---
+
+### 3. CRITICAL: Flask Running with Debug Mode Enabled
+
+**Location:** `ai-service/app.py` Line 64
+```python
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000, debug=True)  # DEBUG MODE + OPEN HOST
+```
+
+**How I Found It:**
+```bash
+# Step 1: Examined ai-service/app.py
+# Step 2: Found Flask app.run() with debug=True
+# Step 3: Verified host="0.0.0.0" (accessible from anywhere)
+```
+
+**Risk Assessment:**
+- Interactive Flask debugger enabled
+- Code execution via debugger
+- Source code visible in stack traces
+- Sensitive data leak in error messages
+- Accessible from 0.0.0.0 (any IP address)
+
+**Proof of Concept:**
+```bash
+# When debug=True, Flask enables:
+# 1. Interactive console in browser
+# 2. Code reloading on file changes
+# 3. Detailed error pages with source code
+
+# Example: Trigger an error to access debugger
+curl -X POST http://target:5000/describe \
+  -H "Content-Type: application/json" \
+  -d '{"input": 1}'  # Invalid input type
+
+# Error response shows:
+# - Full stack trace with file paths
+# - Line numbers
+# - Variable values
+# - Potential code injection points
+
+# With debug PIN bypass (CVE-2024-...), attacker can:
+# Execute arbitrary Python code
+# Read environment variables
+# Access secrets
+```
+
+**Impact:**
+- Remote Code Execution (RCE)
+- Information disclosure
+- Service denial
+- Data theft
+
+**Remediation: For developer**
+```python
+# app.py (FIXED)
+if __name__ == "__main__":
+    import os
+    debug_mode = os.getenv("FLASK_DEBUG", "False") == "True"
+    app.run(host="127.0.0.1", port=5000, debug=debug_mode)
+    # localhost only, debug from environment variable
+```
+
+---
+
+### 4. CRITICAL: CSRF Protection Disabled in SecurityConfig
+
+**Location:** `Backend/tool/src/main/java/com/internship/tool/security/SecurityConfig.java` Line 29
+```java
+.csrf(csrf -> csrf.disable())  //  CSRF DISABLED
+```
+
+**How I Found It:**
+```bash
+# Step 1: Located SecurityConfig.java
+# Step 2: Searched for csrf configuration
+grep -i "csrf" SecurityConfig.java
+
+# Result: csrf(csrf -> csrf.disable())
+```
+
+**Risk Assessment:**
+- CSRF attacks are possible
+- State-changing requests can be forged
+- Authenticated users can be tricked
+- Attackers can modify/delete data
+
+**Proof of Concept:**
+```html
+<!-- Attacker's Website -->
+<html>
+  <body>
+    <!-- Hidden form on attacker's website -->
+    <form action="http://localhost:8080/diagrams/1" method="DELETE" style="display:none;">
+    </form>
+    <script>
+      // Auto-submit when user visits this page
+      document.forms[0].submit();
+    </script>
+    
+    <!-- If victim is logged in, their diagram gets deleted! -->
+  </body>
+</html>
+```
+
+**Impact:**
+- Unauthorized DELETE/PUT/POST actions
+- Data deletion
+- Account compromise
+- Service disruption
+
+**Remediation: For developer**
+```java
+// SecurityConfig.java (FIXED)
+.csrf(Customizer.withDefaults())  // ENABLE CSRF
+// OR for SPA with JWT:
+.csrf(csrf -> csrf
+    .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+)
+```
+
+---
+
+## HIGH SEVERITY VULNERABILITIES
+
+### 5. HIGH: No Rate Limiting on AI Service Endpoints
+
+**Location:** `ai-service/routes/ai_routes.py` - All endpoints (lines 30, 67, 117)
+
+**How I Found It:**
+```bash
+# Step 1: Examined requirements.txt
+cat ai-service/requirements.txt
+# Result: No flask-limiter
+
+# Step 2: Checked app.py for rate limiting
+grep -i "limiter\|rate" ai-service/app.py
+# Result: No rate limiting found
+
+# Step 3: Confirmed all endpoints are unprotected
+```
+
+**Risk Assessment:**
+- No rate limiting configured
+- Endpoints can be hammered with requests
+- DoS attack possible
+- Resource exhaustion possible
+- Groq API quota abuse possible
+
+**Proof of Concept:**
+```bash
+# DOS attack - send 1000 requests in seconds
+for i in {1..1000}; do
+  curl -X POST http://localhost:5000/describe \
+    -H "Content-Type: application/json" \
+    -d '{"input":"test"}' &
+done
+
+# Result: Server gets overwhelmed
+# Legitimate users cannot access service
+# Groq API quota gets exhausted
+```
+
+**Impact:**
+- Denial of Service
+- Resource exhaustion
+- API quota abuse
+- Service unavailability
+
+**Remediation: For developer**
+```python
+# requirements.txt (ADD)
+flask-limiter==3.5.0
+
+# app.py (ADD)
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+
+limiter = Limiter(
+    app=app,
+    key_func=get_remote_address,
+    default_limits=["100 per hour", "20 per minute"]
+)
+
+# routes/ai_routes.py (ADD to each endpoint)
+@ai_bp.route("/describe", methods=["POST"])
+@limiter.limit("10 per minute")  # ✅ Rate limited
+def describe():
+    # ... rest of code
+```
+
+---
+
+### 6. HIGH: Hardcoded JWT Secret in Test File
+**Location:** `Backend/tool/src/test/java/com/internship/tool/security/JwtUtilTest.java`
+```java
+private final String secret = "404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970";
+```
+
+**How I Found It:**
+```bash
+grep -r "404E635266556A586E" --include="*.java"
+# Found in test file
+```
+
+**Risk Assessment:**
+- Test secret is same as production default
+- Hardcoded in code (not environment variable)
+- If production doesn't override it, JWT can be forged
+- Anyone can generate valid JWT tokens
+
+**Proof of Concept:**
+```python
+# If production uses default JWT secret:
+import jwt
+
+secret = "404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970"
+
+# Attacker can forge any JWT token
+malicious_token = jwt.encode(
+    {"username": "admin", "role": "ADMIN"},
+    secret,
+    algorithm="HS256"
+)
+
+# Use this token to authenticate as admin
+curl -H "Authorization: Bearer $malicious_token" \
+  http://localhost:8080/diagrams
+```
+
+**Impact:**
+- JWT forgery
+- Authentication bypass
+- Privilege escalation
+- Unauthorized access
+
+---
+
+### 7. HIGH: Error Messages Leak Sensitive Information
+
+**Location:** `Backend/tool/src/main/java/com/internship/tool/exception/GlobalExceptionHandler.java` Line 28
+```java
+return buildErrorResponse("An unexpected error occurred: " + ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+// Includes raw exception message with stack details
+```
+
+**How I Found It:**
+```bash
+# Step 1: Examined GlobalExceptionHandler.java
+# Step 2: Found exception message directly included in response
+# Step 3: Tested by triggering an error
+```
+
+**Risk Assessment:**
+- Exception messages may contain:
+  - Database details
+  - File paths
+  - Stack traces
+  - Internal logic details
+- Helps attackers understand system
+
+**Proof of Concept:**
+```bash
+# Send invalid input to trigger error
+curl -X POST http://localhost:8080/diagrams \
+  -H "Content-Type: application/json" \
+  -d '{"invalid": "data"}'
+
+# Response might reveal:
+{
+  "message": "An unexpected error occurred: Column 'name' not found in table 'diagrams'",
+  "status": 500,
+  "error": "Internal Server Error"
+}
+
+# Attacker now knows database schema
+```
+
+**Remediation: For developer**
+```java
+// GlobalExceptionHandler.java (FIXED)
+@ExceptionHandler(Exception.class)
+public ResponseEntity<?> handleGlobalException(Exception ex, WebRequest request) {
+    // Log the real exception internally
+    logger.error("Unexpected error:", ex);
+    
+    // Return generic message to user
+    return buildErrorResponse("An unexpected error occurred. Please contact support.", HttpStatus.INTERNAL_SERVER_ERROR);
+    // ✅ No sensitive details exposed
+}
+```
+
+---
+
+### 8. HIGH: show-sql Enabled in application.yml
+
+
+**Location:** `Backend/tool/src/main/resources/application.yml` Line 17
+```yaml
+show-sql: true  # SQL QUERIES LOGGED
+```
+
+**How I Found It:**
+```bash
+grep "show-sql" Backend/tool/src/main/resources/application.yml
+# Result: true
+```
+
+**Risk Assessment:**
+- All SQL queries are logged
+- Logs may be accessible to attackers
+- Sensitive data in queries becomes visible
+- Database schema becomes obvious
+
+**Example Leak:**
+```
+Hibernate:
+    select
+        d.id,d.created_by,d.created_date,...
+    from
+        diagrams d
+    where
+        d.user_id=? and d.deleted=false
+
+Hibernate:
+    select
+        u.id,u.email,u.password_hash,u.role,...
+    from
+        users u
+    where
+        u.username=?
+```
+
+**Impact:**
+- Information disclosure
+- Database schema exposure
+- Query pattern analysis
+
+**Remediation: For developer**
+```yaml
+# application.yml (FIXED)
+show-sql: false  # DISABLED
+
+# For development, use:
+logging:
+  level:
+    org.hibernate.SQL: DEBUG  # ✅ Controlled logging
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE  # ✅ Parameter values in logs
+```
+
+---
+
+##  MEDIUM SEVERITY VULNERABILITIES
+
+### 9.  MEDIUM: No CORS Configuration
+
+**Finding:**
+```bash
+grep -r "CorsConfiguration\|@CrossOrigin" --include="*.java"
+# Result: No CORS configuration found
+```
+
+**Risk:**
+- Default CORS allows same-origin only
+- Cross-origin requests may fail for legitimate frontends
+- Vulnerability depends on browser and deployment
+
+---
+
+### 10. MEDIUM: Hibernate ddl-auto Set to "update"
+
+**Location:** `application.yml` Line 16
+```yaml
+ddl-auto: update  # Auto-update schema
+```
+
+**Risk:**
+- Production databases can be modified
+- No explicit migration control
+- Risk of data loss
+
+**Remediation: For devs**
+```yaml
+ddl-auto: validate  # Validate only in production
+# Use Flyway migrations for schema changes
+```
+
+---
+
+
+## LOW SEVERITY VULNERABILITIES
+
+### 11. LOW: Test Secret Hardcoded
+
+- Test uses hardcoded JWT secret
+- Minor risk since it's test only
+
+---
+
+### 12. LOW: Missing Security Headers in Flask
+
+- While app.py has security headers, they could be enhanced
+- CSP could be stricter
+
+---
+
+### 13. LOW: Frontend Token Storage
+
+- JWT stored in localStorage (visible to XSS)
+- Better practice: httpOnly cookies
+
+---
+
+## 🛠️ REMEDIATION PRIORITY
+
+### Priority 1: CRITICAL (Fix Immediately - Before Production)
+1. [ ] Remove hardcoded database password
+2. [ ] Remove hardcoded Gmail credentials
+3. [ ] Disable Flask debug mode
+4. [ ] Enable CSRF protection
+5. [ ] Add input sanitization to Flask routes
+6. [ ] Add rate limiting to Flask endpoints
+
+**Estimated Time:** 3-4 hours
+
+### Priority 2: HIGH (Fix This Week)
+1. [ ] Fix error message information disclosure
+2. [ ] Disable show-sql in production
+3. [ ] Change Hibernate ddl-auto to validate
+4. [ ] Add Redis authentication
+5. [ ] Update JWT secret handling
+
+**Estimated Time:** 2-3 hours
+
+### Priority 3: MEDIUM (Nice to Have)
+1. [ ] Add CORS configuration
+2. [ ] Add HTTPS support
+3. [ ] Use httpOnly cookies for JWT
+4. [ ] Enhance Flask security headers
+
+**Estimated Time:** 2-3 hours
+
+---
+
+## 🔐 REMEDIATION CODE EXAMPLES
+
+### Example 1: Fix Hardcoded Secrets
+```bash
+# .gitignore (already has this)
+.env
+
+# docker-compose.yml (BEFORE)
+POSTGRES_PASSWORD: Ganesh@24
+MAIL_PASSWORD: dlvp ohcj jtvh wzfc
+
+# docker-compose.yml (AFTER)
+POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+MAIL_PASSWORD: ${MAIL_PASSWORD}
+
+# .env (create new file)
+POSTGRES_PASSWORD=Ganesh@24
+MAIL_PASSWORD=dlvp ohcj jtvh wzfc
+
+# application.yml (remove hardcoded defaults)
+password: ${DB_PASSWORD}  # Remove ":Ganesh@24"
+```
+
+### Example 2: Disable Flask Debug Mode
+```python
+# app.py (BEFORE)
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000, debug=True)
+
+# app.py (AFTER)
+if __name__ == "__main__":
+    import os
+    debug = os.getenv("FLASK_DEBUG", "False") == "True"
+    host = os.getenv("FLASK_HOST", "127.0.0.1")
+    app.run(host=host, port=5000, debug=debug)
+```
+
+### Example 3: Enable CSRF Protection
+```java
+// SecurityConfig.java (BEFORE)
+.csrf(csrf -> csrf.disable())
+
+// SecurityConfig.java (AFTER)
+.csrf(Customizer.withDefaults())
+```
+
+### Example 4: Add Rate Limiting
+```python
+# requirements.txt (ADD)
+flask-limiter==3.5.0
+
+# app.py (ADD)
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+
+limiter = Limiter(
+    app=app,
+    key_func=get_remote_address,
+    default_limits=["100 per hour", "20 per minute"]
+)
+
+# ai_routes.py (ADD to each endpoint)
+@ai_bp.route("/describe", methods=["POST"])
+@limiter.limit("10 per minute")
+def describe():
+    ...
+```
+
+### Example 5: Add Input Sanitization
+```python
+# requirements.txt (ADD)
+bleach==6.0.0
+
+# ai_routes.py (BEFORE)
+user_input = data["input"]
+
+# ai_routes.py (AFTER)
+from bleach import clean
+
+user_input = clean(data["input"].strip())
+if len(user_input) > 1000:
+    return jsonify({"error": "Input too long"}), 400
+
+# Detect injection attempts
+if any(x in user_input.lower() for x in ["ignore previous", "system prompt"]):
+    return jsonify({"error": "Invalid input"}), 400
+```
+
+---
+### Tools/Commands Used:
+```bash
+grep -r "pattern" --include="*.java"
+find . -name "SecurityConfig.java"
+cat docker-compose.yml
+grep -i "password\|secret"
+```
+---
+
+## 📝 CONCLUSION
+
+The Data-Flow-Diagram-Builder application demonstrates several good security practices (JWT, validation, auditing) but has **critical vulnerabilities** that must be addressed before production deployment:
+
+1. **Hardcoded secrets** must be moved to environment variables immediately
+2. **Flask debug mode** must be disabled
+3. **CSRF protection** must be enabled
+4. **Input sanitization** must be added
+5. **Rate limiting** should be implemented
+
+With these fixes, the application would be suitable for production with a **LOW-MEDIUM risk** profile.
+
+---
