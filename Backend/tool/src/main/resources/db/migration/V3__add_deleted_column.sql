@@ -1,1 +1,0 @@
-ALTER TABLE dfd_records ADD deleted BOOLEAN DEFAULT FALSE;

@@ -1,149 +1,134 @@
-# AI Service - Documentation
+# 📊 AI-Powered Data Flow Diagram Builder
 
-## Overview
+![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
+![Spring Boot](https://img.shields.io/badge/Backend-Spring%20Boot%203.4-brightgreen)
+![React](https://img.shields.io/badge/Frontend-React%2019-blue)
+![FastAPI](https://img.shields.io/badge/AI-Integrated%20Java-orange)
+![Docker](https://img.shields.io/badge/Deployment-Docker-blue)
 
-This AI Service is a Flask-based backend that provides intelligent responses for:
+## 🚀 Overview
 
-- Description generation
-- Recommendations
-- Report generation
+The **AI-Powered Data Flow Diagram (DFD) Builder** is a robust full-stack solution designed to streamline the creation and analysis of system architectures. By integrating intelligent AI services directly into the core backend, it provides real-time feedback, automated descriptions, and optimization suggestions for complex data flows.
 
-### Features
+### ✨ Key Features
+- **Interactive DFD Canvas**: Advanced UI for designing multi-level data flow diagrams.
+- **Integrated AI Engine**: Built-in Java-based analysis engine for describing flows and recommending architectural improvements.
+- **Enterprise-Grade Security**: JWT-based authentication with role-based access control (RBAC).
+- **Automated Reporting**: Generate comprehensive PDF/JSON reports based on diagram analysis.
+- **Intelligent Caching**: Redis integration for sub-second response times on repetitive AI queries.
+- **Scalable Infrastructure**: Fully containerized using Docker for seamless deployment.
 
-- Redis caching (15 min TTL)
-- Response time tracking
-- Fallback handling for failures
-- Security headers implementation
-- Docker support
+---
 
-# Setup Instructions
+## 🏗️ System Architecture
 
-1. Clone the repository
+The application follows a modern full-stack architecture, ensuring high performance and simplified infrastructure by integrating AI logic directly into the primary backend.
 
-```bash
-git clone https://github.com/Archana-8868/data-flow-diagram-builder
-cd data-flow-diagram-builder/ai-service
-
-
-2. Install dependencies
-
--bash
-pip install -r requirements.txt
+```mermaid
+graph TD
+    User([User]) <--> Frontend[React Frontend]
+    Frontend <--> Backend[Spring Boot API + Integrated AI]
+    Backend <--> Postgres[(PostgreSQL DB)]
+    Backend <--> Redis[(Redis Cache)]
 ```
 
-3. Run the application
+### 🛰️ Service Breakdown:
+- **Frontend (React 19)**: Responsive SPA using Vite, Tailwind CSS, and Recharts.
+- **Backend (Spring Boot 3.4)**: Unified RESTful API managing business logic, persistence, JWT security, and AI analysis.
+- **Database (PostgreSQL 15)**: Reliable storage for user profiles and diagram state.
+- **Caching (Redis 7)**: Optimized for fast retrieval of AI-generated insights and session data.
 
--bash
-python app.py
+---
 
-4. Access the service
+## 🛠️ Technology Stack
 
-http://127.0.0.1:5000
+| Layer | Technology |
+| :--- | :--- |
+| **Frontend** | React 19, Vite, Tailwind CSS, Axios |
+| **Backend** | Spring Boot 3.4, Spring Security, JPA/Hibernate |
+| **AI Analysis** | Java-based Intelligent Logic with Redis Integration |
+| **Storage** | PostgreSQL 15, Redis 7 |
+| **DevOps** | Docker, Docker Compose, JaCoCo (Coverage) |
 
-=>API Endpoints
+---
 
-🔹 1. Describe
+## 📋 Prerequisites
 
-POST `/describe`
+Ensure you have the following installed on your machine:
+- **Docker & Docker Compose** (Desktop or Server)
+- **Node.js 18+** (for local UI development)
+- **JDK 17+** (for local API development)
 
-Request:
+---
 
--json
-{
-"input": "Data Flow Diagram"
-}
+## ⚙️ Setup & Installation
 
-Response:
+### 1. Clone the Repository
+```bash
+git clone https://github.com/ganeshkolare5-blip/data-flow-diagram-builder.git
+cd data-flow-diagram-builder
+```
 
--json
-{
-"generated_at": "2026-05-01T15:18:11.160962",
-"input": "Data Flow Diagram",
-"response_time": 0.0,
-"status": "success"
-}
+### 2. Docker Deployment (Recommended)
+Launch the entire stack with a single command:
 
-🔹 2. Recommend
+```bash
+docker-compose up --build
+```
 
-POST `/recommend`
+**Access Points:**
+- 🖥️ **Frontend**: [http://localhost:5173](http://localhost:5173)
+- ⚙️ **Backend API & AI**: [http://localhost:8080](http://localhost:8080)
+- 🤖 **AI Health Check**: [http://localhost:8080/api/diagram/ai/health](http://localhost:8080/api/diagram/ai/health)
+- 📝 **Swagger Docs**: `http://localhost:8080/swagger-ui/index.html`
 
-Request:
+### 3. Manual Development Setup
 
--json
-{
-"input": "System Optimization"
-}
+#### Backend:
+```bash
+cd Backend/tool
+./mvnw spring-boot:run
+```
 
-Response:
+#### Frontend:
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
--json
-{
-"recommendations": [
-{
-"action_type": "Optimize",
-"description": "Improve system performance and speed.",
-"priority": "High"
-},
-{
-"action_type": "Security",
-"description": "Protect user data and strengthen login security.",
-"priority": "Medium"
-},
-{
-"action_type": "Monitoring",
-"description": "Track system activity and logs regularly.",
-"priority": "Low"
-}
-],
-"response_time": 0.0
-}
+---
 
-🔹 3. Generate Report
+## 🔐 Environment Reference Table
 
-POST `/generate-report`
+| Variable | Purpose | Default Value |
+| :--- | :--- | :--- |
+| `DB_URL` | PostgreSQL connection string | `jdbc:postgresql://db:5432/dfd_builder` |
+| `DB_USERNAME` | Database admin user | `postgres` |
+| `DB_PASSWORD` | Database admin password | *(your_password)* |
+| `REDIS_HOST` | Redis endpoint | `redis` |
+| `REDIS_PORT` | Redis communication port | `6379` |
+| `JWT_SECRET` | 256-bit key for token signing | *(your_secret_key)* |
+| `MAIL_HOST` | SMTP server for notifications | `smtp.gmail.com` |
+| `MAIL_USERNAME` | Outbound email address | `example@gmail.com` |
+| `MAIL_PASSWORD` | App-specific email password | *(your_app_password)* |
 
-Request:
+---
 
--json
-{
-"input": "Data Flow Diagram"
-}
+## 🧪 Quality & Testing
+We maintain high standards through automated testing and coverage analysis.
 
-Response:
+**Backend Coverage:**
+```bash
+cd Backend/tool
+./mvnw test
+# View report: target/site/jacoco/index.html
+```
 
--json
-{
-"key_items": [
-"User Management",
-"Data Processing",
-"System Security",
-"Reporting Module"
-],
-"overview": "The Data Flow Diagram system helps manage users, data, and core operations effectively.",
-"recommendations": [
-"Improve scalability",
-"Enhance security",
-"Add analytics dashboard"
-],
-"response_time": 0.0,
-"summary": "Data Flow Diagram is designed to improve workflow and efficiency.",
-"title": "Data Flow Diagram Report"
-}
+---
 
-=>Environment Variables
+## 📄 License
+Distributed under the MIT License. See `LICENSE` for more information.
 
-Create a `.env` file using:
-
--text
-REDIS_HOST=localhost
-REDIS_PORT=6379
-MODEL_NAME=all-MiniLM-L6-v2
-PORT=5000
-
-=>Status
-
-*All endpoints working
-*Response time < 2 seconds
-\*AI service fully functional
-
-## Author-Archana
+## 👤 Author
+**Ganesh** - *Full Stack Developer*

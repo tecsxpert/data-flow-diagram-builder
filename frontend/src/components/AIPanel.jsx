@@ -25,7 +25,7 @@ function AIPanel({ description }) {
     setError(null);
 
     try {
-      const res = await API.post(`/ai/${endpoint}`, { text: description });
+      const res = await API.post(`/ai/${endpoint}`, { input: description });
       setResult({ action: label, data: res.data });
     } catch (err) {
       console.error(err);

@@ -4,27 +4,30 @@ spring:
     redis:
       time-to-live: 10m
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/dfd_builder}
+    url: ${DB_URL:jdbc:postgresql://localhost:5433/dfd_builder}
     username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:Ganesh@24}
+    password: ${DB_PASSWORD:your_db_password_here}
   data:
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
     show-sql: true
     properties:
       hibernate:
         format_sql: true
   flyway:
     enabled: true
+    validate-on-migrate: false
+    baseline-on-migrate: true
+    baseline-version: 0
   mail:
     host: ${MAIL_HOST:smtp.gmail.com}
     port: ${MAIL_PORT:587}
-    username: ${MAIL_USERNAME:ganeshkolare5@gmail.com}
-    password: ${MAIL_PASSWORD:dlvp ohcj jtvh wzfc}
+    username: ${MAIL_USERNAME:your_email@gmail.com}
+    password: ${MAIL_PASSWORD:your_app_password_here}
     properties:
       mail:
         smtp:
@@ -33,5 +36,5 @@ spring:
             enable: true
 
 jwt:
-  secret: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+  secret: ${JWT_SECRET:your_base64_jwt_secret_key_at_least_32_chars_long}
   expiration: ${JWT_EXPIRATION:86400000}

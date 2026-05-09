@@ -1,6 +1,7 @@
 package com.internship.tool.controller;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -80,5 +81,11 @@ public class DfdRecordController {
     public ResponseEntity<List<DfdRecord>> search(@RequestParam String q) {
         List<DfdRecord> results = repository.findByTitleContainingIgnoreCaseAndDeletedFalse(q);
         return ResponseEntity.ok(results);
+    }
+
+    // ─── GET /stats → 200 OK ──────────────────────────────────────────────────
+    @GetMapping("/stats")
+    public ResponseEntity<Map<String, Object>> getStats() {
+        return ResponseEntity.ok(service.getStats());
     }
 }
